@@ -4,7 +4,7 @@
     <script type="module">
       async function init() {
         const { instance } = await WebAssembly.instantiateStreaming(
-          fetch("./filter_rs.wasm")
+          fetch("/random")
         );
 
         const width = 480;
