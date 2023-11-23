@@ -2,9 +2,25 @@
 
 ## Install Rust
 
-## Add wasm target
+https://www.rust-lang.org/tools/install
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
+## Add wasm32 target
+
+```bash
+rustup target add wasm32-unknown-unknown
+```
 
 ## Compile wasm
+
+```bash
+cargo build --target wasm32-unknown-unknown --release
+```
+
+OR 
 
 ```bash
 make
