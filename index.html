@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script type="module">
+    async function init() {
+      let loadedWasmModule = null;
+      let image = null
+
+      const width = 600;
+      const height = 600;
+
+      const wasmFileInput = document.getElementById("wasmFile");
+
+      const canvas = document.getElementById("demo-canvas");
+      canvas.width = width;
+      canvas.height = height;
+
+      canvas.addEventListener("click", () => {
+        wasmFileInput.click();
+      })
+
+      wasmFileInput.addEventListener("change", () => {
+        loadWasm({ file: wasmFileInput.files[0] });
+      })
+
+      canvas.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+
+        loadWasm({ file });
+      });
+
+      async function loadWasm({
+        file,
+        url
+      }) {
+        if (file) {
+          const { instance } = await WebAssembly.instantiateStreaming(
+            fetch(URL.createObjectURL(file))
+          );
+          loadedWasmModule = instance;
+        } else if (url) {
+          const { instance } = await WebAssembly.instantiateStreaming(
+            fetch(url)
+          );
+          loadedWasmModule = instance;
+        }
+        const buffer_address = loadedWasmModule.exports.BUFFER.value;
+        image = new ImageData(
+          new Uint8ClampedArray(
+            loadedWasmModule.exports.memory.buffer,
+            buffer_address,
+            4 * width * height,
+          ),
+          width,
+        );
+
+      }
+
+      canvas.addEventListener("dragover", (e) => {
+        e.preventDefault();
+      });
+
+      const ctx = canvas.getContext("2d");
+      ctx.font = "24px Arial";
+      ctx.fillStyle = "black";
+
+      const text = "Click to upload wasm module here";
+
+      const x = (canvas.width - ctx.measureText(text).width) / 2;
+      const y = canvas.height / 2;
+      ctx.fillText(text, x, y);
+
+      const draw = () => {
+        if (loadedWasmModule && image) {
+          loadedWasmModule.exports.draw();
+          ctx.putImageData(image, 0, 0);
+        }
+        requestAnimationFrame(draw);
+      };
+
+      draw();
+    }
+
+    init();
+  </script>
+  <style>
+    html, body {
+      margin: 0;
+      font-family: 'Courier New', Courier, monospace;
+    }
+  </style>
+</head>
+
+<body style="margin: 0">
+  <input type="file" id="wasmFile" style="display: none;">
+  <div style="display: flex; align-items: center; justify-content: center; height: 100vh; flex-direction: column;">
+    <h1>WASM Art</h1>
+    <canvas id="demo-canvas"></canvas>
+    <p>See Readme on <a href="https://github.com/adamjberg/wasm-art">Github</a></p>
+  </div>
+</body>
+
+</html>
