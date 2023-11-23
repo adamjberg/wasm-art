@@ -26,7 +26,7 @@ OR
 make
 ```
 
-Wasm output will be written to target/wasm32-unknown-unknown/release/wasm_art_example.wasm
+Wasm output will be written to `target/wasm32-unknown-unknown/release/wasm_art_example.wasm`
 
 ## Try It
 
