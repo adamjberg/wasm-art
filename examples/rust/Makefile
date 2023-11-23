@@ -1,2 +1,2 @@
 main:
-	wasm-pack build --target web --release
+	cargo build --target wasm32-unknown-unknown --release
