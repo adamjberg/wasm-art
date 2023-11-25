@@ -13,6 +13,8 @@
       const wasmFileInput = document.getElementById("wasmFile");
 
       const canvas = document.getElementById("demo-canvas");
+      const ctx = canvas.getContext("2d");
+
       canvas.width = width;
       canvas.height = height;
 
@@ -35,18 +37,36 @@
         file,
         url
       }) {
+        const importObject = {
+          env: {
+            fillStyle(r, g, b, a) {
+              ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`
+            },
+            fillRect(x, y, width, height) {
+              ctx.fillRect(x, y, width, height)
+            }
+          }
+        }
+
         if (file) {
           const { instance } = await WebAssembly.instantiateStreaming(
-            fetch(URL.createObjectURL(file))
+            fetch(URL.createObjectURL(file)),
+            importObject
           );
           loadedWasmModule = instance;
         } else if (url) {
           const { instance } = await WebAssembly.instantiateStreaming(
-            fetch(url)
+            fetch(url),
+            importObject
           );
           loadedWasmModule = instance;
         }
-        const buffer_address = loadedWasmModule.exports.BUFFER.value;
+
+        let buffer_address = loadedWasmModule.exports.BUFFER?.value;
+        if (!buffer_address) {
+          buffer_address = loadedWasmModule.exports.get_buffer();
+        }
+
         image = new ImageData(
           new Uint8ClampedArray(
             loadedWasmModule.exports.memory.buffer,
@@ -62,7 +82,6 @@
         e.preventDefault();
       });
 
-      const ctx = canvas.getContext("2d");
       ctx.font = "24px Arial";
       ctx.fillStyle = "black";
 
@@ -74,8 +93,8 @@
 
       const draw = () => {
         if (loadedWasmModule && image) {
-          loadedWasmModule.exports.draw();
           ctx.putImageData(image, 0, 0);
+          loadedWasmModule.exports.draw();
         }
         requestAnimationFrame(draw);
       };
@@ -86,7 +105,8 @@
     init();
   </script>
   <style>
-    html, body {
+    html,
+    body {
       margin: 0;
       font-family: 'Courier New', Courier, monospace;
     }

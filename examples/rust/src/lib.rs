@@ -5,6 +5,12 @@ fn handle_panic(_: &core::panic::PanicInfo) -> ! {
     loop {}
 }
 
+// TODO: Uncomment these to access canvas drawing utilities
+// extern { 
+//     fn fillRect(x: i32, y:i32, w: i32, h: i32);
+//     fn fillStyle(r: u8, g: u8, b: u8, a: f32);
+// }
+
 use core::sync::atomic::{AtomicU32, Ordering};
 
 static FRAME: AtomicU32 = AtomicU32::new(0);
